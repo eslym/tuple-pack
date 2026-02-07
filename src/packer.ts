@@ -616,6 +616,12 @@ export function object<Keys extends string[]>(
 	return new object$(keys) as any;
 }
 
+export function tuple<Elements extends Packer<any, any>[]>(
+	...elements: Elements
+): TuplePacker<Elements, false> {
+	return new tuple$(elements as any) as any;
+}
+
 export function versioned(): VersionedPacker<never, false> {
 	return new versioned$(new Map()) as any;
 }
