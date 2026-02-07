@@ -44,7 +44,9 @@ const unpacked = payload.unpack(packed);
 primitive(...types);
 literal(value);
 object(...keys);
+tuple(...packers);
 versioned();
+any(nullable?);
 ```
 
 Packers expose:
@@ -62,6 +64,7 @@ Additional helpers:
 - `ObjectPacker.$shape(shape | key, packer?)`
 - `ArrayPacker.$tuple(length)`
 - `VersionedPacker.$case(version, packer)`
+- `any(nullable?)` passes through values without validation
 
 ## Build
 

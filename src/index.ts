@@ -1,4 +1,4 @@
-import { literal, primitive, object, tuple, versioned } from "./packer";
+import { literal, primitive, object, tuple, versioned, any } from "./packer";
 import { PackerError, PackError, UnpackError } from "./error";
 
 export const packer = {
@@ -7,6 +7,7 @@ export const packer = {
 	object,
 	tuple,
 	versioned,
+	any,
 	PackerError,
 	PackError,
 	UnpackError
@@ -20,6 +21,7 @@ export {
 	object,
 	tuple,
 	versioned,
+	any,
 	PackerError,
 	PackError,
 	UnpackError

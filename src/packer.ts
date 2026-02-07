@@ -159,6 +159,11 @@ export interface VersionedPacker<
 	): VersionedPacker<Cases | [version: C, data: P], Nullable>;
 }
 
+export interface AnyPacker<
+	T extends any,
+	Nullable extends boolean = true
+> extends Packer<$nullable<T, Nullable>, $nullable<T, Nullable>> {}
+
 abstract class packer$ {
 	get [isPacker]() {
 		return true;
@@ -598,6 +603,39 @@ class versioned$ extends packer$ {
 	}
 }
 
+class any$ extends packer$ {
+	#nullable: boolean;
+
+	constructor(nullable: boolean = true) {
+		super();
+		this.#nullable = nullable;
+	}
+
+	pack(value: any, path: (string | number)[] = []): any {
+		if (value === null && !this.#nullable) {
+			throw new PackError(`Expected non-null value, got null`, path);
+		}
+		return value;
+	}
+
+	unpack(envolope: any, path: (string | number)[] = []): any {
+		if (envolope === null && !this.#nullable) {
+			throw new UnpackError(`Expected non-null value, got null`, path);
+		}
+		return envolope;
+	}
+
+	$nullable(nullable: boolean = true) {
+		if (this.#nullable && !nullable) {
+			return new any$(false);
+		}
+		if (!this.#nullable && nullable) {
+			return new any$(true);
+		}
+		return this;
+	}
+}
+
 export function primitive<Types extends $types>(
 	...types: Types
 ): PrimitivePacker<Types> {
@@ -624,4 +662,15 @@ export function tuple<Elements extends Packer<any, any>[]>(
 
 export function versioned(): VersionedPacker<never, false> {
 	return new versioned$(new Map()) as any;
+}
+
+/**
+ * This packer will passthrough the value as-is without any validation.
+ */
+export function any<T>(): AnyPacker<T, false>;
+export function any<T, N extends boolean>(
+	nullable: $known<N, [boolean]>
+): AnyPacker<T, N>;
+export function any(nullable: boolean = false) {
+	return new any$(nullable) as any;
 }
