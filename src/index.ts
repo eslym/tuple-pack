@@ -1,4 +1,12 @@
-import { literal, primitive, object, tuple, versioned, any } from "./packer";
+import {
+	literal,
+	primitive,
+	object,
+	tuple,
+	versioned,
+	any,
+	isPacker
+} from "./packer";
 import { PackerError, PackError, UnpackError } from "./error";
 
 export const packer = {
@@ -10,7 +18,8 @@ export const packer = {
 	any,
 	PackerError,
 	PackError,
-	UnpackError
+	UnpackError,
+	isPacker
 };
 
 export default packer;
@@ -26,5 +35,7 @@ export {
 	PackError,
 	UnpackError
 };
+
+export { isPacker } from "./packer";
 
 export type { Shape, Envelope } from "./packer";

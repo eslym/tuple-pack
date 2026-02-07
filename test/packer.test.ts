@@ -4,6 +4,7 @@ import {
 	PackError,
 	UnpackError,
 	any,
+	isPacker,
 	literal,
 	object,
 	primitive,
@@ -165,6 +166,53 @@ describe("any packer", () => {
 			throw new Error("Expected UnpackError");
 		} catch (error) {
 			expect(error).toBeInstanceOf(UnpackError);
+		}
+	});
+});
+
+describe("packer validation", () => {
+	it("identifies packer instances", () => {
+		expect(isPacker(primitive("string"))).toBe(true);
+		expect(isPacker(null)).toBe(false);
+		expect(isPacker({})).toBe(false);
+	});
+
+	it("rejects non-packers in object shape", () => {
+		const base = object("id");
+		try {
+			base.$shape("id", {} as any);
+			throw new Error("Expected error");
+		} catch (error) {
+			expect((error as Error).message).toBe(
+				"packer is not a valid Packer instance"
+			);
+		}
+		try {
+			base.$shape({ id: {} as any });
+			throw new Error("Expected error");
+		} catch (error) {
+			expect((error as Error).message).toBe(
+				'shape["id"] is not a valid Packer instance'
+			);
+		}
+	});
+
+	it("rejects non-packers in tuple and versioned", () => {
+		try {
+			tuple({} as any);
+			throw new Error("Expected error");
+		} catch (error) {
+			expect((error as Error).message).toBe(
+				"elements[0] is not a valid Packer instance"
+			);
+		}
+		try {
+			versioned().$case(1, {} as any);
+			throw new Error("Expected error");
+		} catch (error) {
+			expect((error as Error).message).toBe(
+				"packer is not a valid Packer instance"
+			);
 		}
 	});
 });

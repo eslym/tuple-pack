@@ -7,7 +7,7 @@ import {
 } from "./primitives";
 import type { $known, $nullable, $prettify, $tuple } from "./types";
 
-export const isPacker = Symbol("isPacker");
+export const $isPacker = Symbol("isPacker");
 
 type $envelope<
 	Keys extends string[],
@@ -47,7 +47,7 @@ export type Shape<P extends Packer<any, any>> =
 	P extends Packer<infer D, any> ? D : never;
 
 export interface Packer<Data, Envelope> {
-	readonly [isPacker]: true;
+	readonly [$isPacker]: true;
 
 	pack(value: Data, path?: (string | number)[]): Envelope;
 
@@ -165,7 +165,7 @@ export interface AnyPacker<
 > extends Packer<$nullable<T, Nullable>, $nullable<T, Nullable>> {}
 
 abstract class packer$ {
-	get [isPacker]() {
+	get [$isPacker]() {
 		return true;
 	}
 
@@ -361,12 +361,16 @@ class object$ extends packer$ {
 
 	$shape(shape: Record<string, packer$> | string, packer?: packer$) {
 		if (typeof shape === "string" && packer) {
+			assertPacker(packer, "packer");
 			return new object$(
 				this.#keys,
 				{ ...this.#shape, [shape]: packer },
 				this.#nullable
 			);
 		}
+		Object.entries(shape).forEach(([key, value]) => {
+			assertPacker(value, `shape[${JSON.stringify(key)}]`);
+		});
 		return new object$(
 			this.#keys,
 			{ ...this.#shape, ...(shape as Record<string, packer$>) },
@@ -385,6 +389,7 @@ class array$ extends packer$ {
 		length: number | undefined = undefined,
 		nullable: boolean = false
 	) {
+		assertPacker(element, "element");
 		super();
 		this.#element = element;
 		this.#length = length;
@@ -457,6 +462,9 @@ class tuple$ extends packer$ {
 
 	constructor(elements: packer$[], nullable: boolean = false) {
 		super();
+		for (const [index, element] of elements.entries()) {
+			assertPacker(element, `elements[${index}]`);
+		}
 		this.#elements = elements;
 		this.#nullable = nullable;
 	}
@@ -597,6 +605,7 @@ class versioned$ extends packer$ {
 				`Version ${JSON.stringify(version)} already exists`
 			);
 		}
+		assertPacker(packer, "packer");
 		const newVersions = new Map(this.#versions);
 		newVersions.set(version, packer);
 		return new versioned$(newVersions, this.#nullable);
@@ -665,7 +674,7 @@ export function versioned(): VersionedPacker<never, false> {
 }
 
 /**
- * This packer will passthrough the value as-is without any validation.
+ * This packer will passthrough the value as-is without any validation or transformation.
  */
 export function any<T>(): AnyPacker<T, false>;
 export function any<T, N extends boolean>(
@@ -673,4 +682,14 @@ export function any<T, N extends boolean>(
 ): AnyPacker<T, N>;
 export function any(nullable: boolean = false) {
 	return new any$(nullable) as any;
+}
+
+export function isPacker(value: unknown): value is Packer<any, any> {
+	return typeof value === "object" && value !== null && (value as any)[$isPacker] === true;
+}
+
+function assertPacker(value: unknown, variable: string): asserts value is Packer<any, any> {
+	if (!isPacker(value)) {
+		throw new Error(`${variable} is not a valid Packer instance`);
+	}
 }
