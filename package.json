@@ -15,10 +15,12 @@
 		"dist"
 	],
 	"scripts": {
+		"test": "bun test",
 		"build": "rollup -c",
 		"prepack": "bun run build"
 	},
 	"devDependencies": {
+		"@types/bun": "latest",
 		"@rollup/plugin-typescript": "^12.3.0",
 		"prettier": "^3.8.1",
 		"rollup": "^4.57.1",
