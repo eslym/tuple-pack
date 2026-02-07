@@ -4,6 +4,10 @@
 	"main": "dist/index.cjs",
 	"types": "dist/index.d.ts",
 	"type": "module",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/eslym/tuple-pack.git"
+	},
 	"exports": {
 		".": {
 			"import": "./dist/index.js",
